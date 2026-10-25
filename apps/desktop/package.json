@@ -26,6 +26,7 @@
     "prepare:package": "tsx scripts/package-target.ts --prepare-only",
     "verify:mac-signature": "node scripts/verify-macos-signature.mjs",
     "package": "tsx scripts/package-target.ts",
+    "package:win7": "tsx scripts/package-win7.ts",
     "check:package": "tsx scripts/package-target.ts --check",
     "restore:mac-proxy": "tsx scripts/macos-notarization-proxy.ts",
     "package:dir": "tsx scripts/package-target.ts --dir",

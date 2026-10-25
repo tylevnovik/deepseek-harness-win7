@@ -39,14 +39,14 @@ export const ENV_OVERRIDES = {
 
 /**
  * UTF-8 output pinning prepended to every command. The subprocess collector
- * decodes output bytes as UTF-8, but Windows PowerShell 5.1 (the last-resort
+ * decodes output bytes as UTF-8, but Windows PowerShell (the last-resort
  * executable fallback) writes the console/OEM code page by default, which
  * garbles non-ASCII output; pwsh 7 defaults to UTF-8 and is unaffected. The
  * statements ride on line 1 after `; ` separators so PowerShell error line
  * numbers stay accurate.
  */
 export const ENCODING_PREAMBLE =
-  '[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false); $OutputEncoding = [System.Text.UTF8Encoding]::new($false); '
+  '[Console]::OutputEncoding = (New-Object System.Text.UTF8Encoding $false); $OutputEncoding = (New-Object System.Text.UTF8Encoding $false); '
 
 /** Default SIGTERM→SIGKILL grace period (the `graceMs` config). */
 const DEFAULT_GRACE_MS = 3_000

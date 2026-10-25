@@ -1,0 +1,79 @@
+/** Harness actions served by ZCode's authenticated guest transport. */
+import { readFile, writeFile, mkdir, open, readdir } from 'node:fs/promises'
+import { join } from 'node:path'
+import { platform, release, networkInterfaces } from 'node:os'
+import { spawn, execFile } from 'node:child_process'
+import { promisify } from 'node:util'
+import { createServer, request } from 'node:http'
+import { connect } from 'node:net'
+import { setTimeout as delay } from 'node:timers/promises'
+import { authorized, inside, JOB_ACTIONS } from './control-core.mjs'
+
+const config = JSON.parse((await readFile(new URL('config.json', import.meta.url), 'utf8')).replace(/^\uFEFF/u, ''))
+const executeFile = promisify(execFile)
+const appExe = join(config.appRoot, 'DshHarness.exe')
+const completed = new Map()
+let desktop
+let currentProfile
+
+async function profileEnv(name) {
+  if (!/^[a-z0-9-]{1,64}$/u.test(name)) throw new Error('Invalid profile identity')
+  currentProfile = inside(config.profileRoot, name)
+  for (const path of ['electron', 'home', 'AppData/Roaming', 'AppData/Local', 'workspace']) await mkdir(join(currentProfile, path), { recursive: true })
+  const env = { ...process.env, HOME: currentProfile, USERPROFILE: currentProfile,
+    APPDATA: join(currentProfile, 'AppData/Roaming'), LOCALAPPDATA: join(currentProfile, 'AppData/Local'),
+    DSH_HOME: join(currentProfile, 'home'), NODE_OPTIONS: '' }
+  delete env.ELECTRON_RUN_AS_NODE
+  return env
+}
+
+async function stop() {
+  if (!desktop || desktop.exitCode !== null) return { stopped: false }
+  const exited = new Promise(resolveExit => desktop.once('close', resolveExit))
+  await executeFile('taskkill.exe', ['/PID', String(desktop.pid), '/T', '/F'], { windowsHide: true })
+  await exited
+  desktop = undefined
+  return { stopped: true }
+}
+
+async function execute(job) {
+  if (!JOB_ACTIONS.has(job.action)) throw new Error('Unsupported action')
+  if (job.action === 'runtime') {
+    const { DatabaseSync } = await import('node:sqlite')
+    const db = new DatabaseSync(':memory:')
+    try {
+      db.exec("CREATE TABLE probe(value TEXT); INSERT INTO probe VALUES ('Win7-中文')")
+      return { platform: platform(), release: release(), versions: process.versions, sqlite: db.prepare('SELECT value FROM probe').get().value }
+    } finally { db.close() }
+  }
+  if (job.action === 'diagnostics' || job.action === 'overview') {
+    const env = await profileEnv('diagnostics')
+    let execution
+    try {
+      execution = await executeFile(appExe, ['--expose-internals', join(import.meta.dirname, 'diagnostic-probe.mjs'), config.appRoot, currentProfile],
+        { cwd: join(currentProfile, 'workspace'), env: { ...env, ELECTRON_RUN_AS_NODE: '1' }, windowsHide: true, timeout: 180000, maxBuffer: 4 * 1024 * 1024 })
+    } catch (error) { execution = { stdout: error.stdout ?? '', stderr: error.stderr ?? '', failed: true, error: error.message } }
+    return { ...execution, report: JSON.parse(await readFile(join(currentProfile, 'probe-report.json'), 'utf8')) }
+  }
+  if (job.action === 'collect') {
+    const files = []
+    if (currentProfile) for (const name of ['desktop.log', 'probe-report.json']) {
+      try { files.push({ name, text: (await readFile(join(currentProfile, name), 'utf8')).slice(-128000) }) }
+      catch (error) { if (error.code !== 'ENOENT') throw error }
+    }
+    return { files }
+  }
+  if (job.action === 'stop') return stop()
+  if (job.action === 'shutdown') { await executeFile('shutdown.exe', ['/s', '/t', '5'], { windowsHide: true }); return { requested: true } }
+  await stop()
+  const env = await profileEnv(job.params.profile ?? 'fresh')
+  const handle = await open(join(currentProfile, 'desktop.log'), 'a')
+  const log = handle.createWriteStream()
+  desktop = spawn(appExe, ['--remote-debugging-port=9257', `--user-data-dir=${join(currentProfile, 'electron')}`],
+    { env, cwd: config.appRoot, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] })
+  desktop.stdout.pipe(log, { end: false })
+  desktop.stderr.pipe(log, { end: false })
+  desktop.once('close', () => log.end())
+  desktop.once('error', error => { log.end(`spawn failed: ${error.message}\n`) })
+  return { pid: desktop.pid, profile: currentProfile }
+}

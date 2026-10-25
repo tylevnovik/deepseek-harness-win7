@@ -13,6 +13,7 @@ import { packagingStep } from './packaging-step.mjs'
 import { preparePrimaryRuntime } from './prepare-primary-runtime.ts'
 import { prepareDesktopCli } from './prepare-cli.ts'
 import { prepareCommandLink } from './prepare-command-link.ts'
+import { isWin7Build, prepareWin7Electron } from './prepare-win7-runtime.ts'
 
 const BUILD_PATHS = resolveDesktopTargetBuildPaths()
 const RUNTIME_ROOT = BUILD_PATHS.runtime
@@ -21,6 +22,13 @@ type DesktopTarget = ReturnType<typeof desktopTargetPlatform>
 
 /** Extract the target Electron distribution and return its embedded Node version. */
 async function prepareElectron({ platform, arch }: DesktopTarget): Promise<string> {
+  if (isWin7Build()) {
+    rmSync(BUILD_PATHS.electron, { recursive: true, force: true })
+    await prepareWin7Electron(BUILD_PATHS.electron, BUILD_PATHS.downloads)
+    return execFileSync(join(BUILD_PATHS.electron, 'electron.exe'), ['-p', 'process.versions.node'], {
+      encoding: 'utf8', env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' },
+    }).trim()
+  }
   const require = createRequire(import.meta.url)
   const { version } = require('electron/package.json') as { version: string }
   const archive = await packagingStep(process.env.DSH_DESKTOP_PACKAGING_RUN_DIR, 'download:electron',
@@ -56,7 +64,7 @@ async function main(): Promise<void> {
   const preparePrimary = () => packagingStep(process.env.DSH_DESKTOP_PACKAGING_RUN_DIR, 'prepare:primary-runtime',
     () => preparePrimaryRuntime({ deferSmoke: values['defer-primary-runtime-smoke'] }))
   let nodeVersion: string
-  if (target.platform === 'win32') {
+  if (target.platform === 'win32' && !isWin7Build()) {
     const [electron, primary] = await Promise.allSettled([prepareElectron(target), preparePrimary()])
     if (electron.status === 'rejected') throw electron.reason
     if (primary.status === 'rejected') throw primary.reason

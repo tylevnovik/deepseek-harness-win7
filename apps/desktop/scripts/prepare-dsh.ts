@@ -35,6 +35,8 @@ import {
 import { desktopTargetPlatform, resolveDesktopBuildTarget, resolveDesktopTargetBuildPaths } from './desktop-build-paths.mjs'
 import { desktopRuntimeFileExclusion } from './runtime-file-policy.ts'
 import { selectOfficeEngine } from '../../../scripts/libreoffice-packages.mjs'
+import { isWin7Build } from './prepare-win7-runtime.ts'
+import { installWin7NativeBinding, installWin7Dependencies } from './prepare-win7-native.ts'
 
 const APP_ROOT = resolve(import.meta.dirname, '..')
 const BUILD_PATHS = resolveDesktopTargetBuildPaths()
@@ -143,7 +145,7 @@ async function main(): Promise<void> {
     const target = desktopTargetPlatform(targetName)
     const modules = join(BUILD_ROOT, 'node_modules')
     const officeManifest = JSON.parse(readFileSync(join(modules, '@deepseek-ai/libreoffice-kit/package.json'), 'utf8'))
-    const officeEngine = selectOfficeEngine(officeManifest, target)
+    const officeEngine = isWin7Build() ? 'wasm' : selectOfficeEngine(officeManifest, target)
     mkdirSync(DSH_OUTPUT_ROOT, { recursive: true })
     await packagingStep(process.env.DSH_DESKTOP_PACKAGING_RUN_DIR, 'runtime:materialize-modules', async () => {
       cpSync(modules, join(DSH_OUTPUT_ROOT, 'node_modules'), {
@@ -159,6 +161,10 @@ async function main(): Promise<void> {
       if (!existsSync(join(DSH_OUTPUT_ROOT, 'node_modules', DESKTOP_HOST_PACKAGE, file))) {
         throw new Error(`desktop runtime: missing private Host file ${file}`)
       }
+    }
+    if (isWin7Build()) {
+      await installWin7NativeBinding(DSH_OUTPUT_ROOT, BUILD_PATHS.root, BUILD_PATHS.downloads)
+      await installWin7Dependencies(DSH_OUTPUT_ROOT, BUILD_PATHS.downloads)
     }
     if (!existsSync(join(DSH_OUTPUT_ROOT, 'node_modules', '@deepseek-ai', `libreoffice-kit-${officeEngine}`, 'prebuilds.json'))) {
       throw new Error(`desktop runtime: missing required LibreOffice engine ${officeEngine}`)

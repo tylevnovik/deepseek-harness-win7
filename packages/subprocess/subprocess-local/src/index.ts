@@ -10,7 +10,7 @@
 
 import { constants } from 'node:fs'
 import { access, stat } from 'node:fs/promises'
-import { userInfo } from 'node:os'
+import { release as osRelease, userInfo } from 'node:os'
 import { delimiter, extname, isAbsolute, resolve } from 'node:path'
 import type { Duplex } from 'node:stream'
 import { Context } from '@deepseek-ai/cordis'
@@ -51,8 +51,10 @@ import { createProcessInspector } from './process-inspector.ts'
 import type { ProcessInspector } from './process-inspector.ts'
 import { LocalTerminalHandle } from './terminal.ts'
 import { prepareShellActivity } from './shell-activity.ts'
+import { requiresWinpty } from './windows-pty.ts'
 
 const requireNodePty = createLazyRequire<typeof NodePty>('node-pty', import.meta.url)
+const requireWinpty = createLazyRequire<Pick<typeof NodePty, 'spawn'>>('node-pty-win7', import.meta.url)
 
 /**
  * Local subprocess service: platform-selected managed ranges, Node-shaped stdio
@@ -297,6 +299,7 @@ export class LocalSubprocessRuntime extends SubprocessRuntime {
     const containmentMode = this.selectContainmentMode('terminal')
     const env = targetEnvironment(spec)
     const platform = this.internals.platform ?? process.platform
+    const winpty = platform === 'win32' && requiresWinpty(osRelease())
     const activity = prepareShellActivity(spec, env, platform)
     const launch = activity === undefined ? spec : { ...spec, argv: activity.argv, env: activity.env }
     const options: IPtyForkOptions | IWindowsPtyForkOptions = {
@@ -309,7 +312,7 @@ export class LocalSubprocessRuntime extends SubprocessRuntime {
       // Windows 10 22H2) renders the persistent-pwsh prompt tail in a form the
       // readiness path cannot match; the console host node-pty ships emits it
       // verbatim, see [Agent Note](../../../../.agents/notes/implemented/bug-fix/2026-09-28-pty-bundled-console-host.md).
-      ...(platform === 'win32' ? { useConptyDll: true } : {}),
+      ...(platform === 'win32' ? winpty ? { useConpty: false } : { useConptyDll: true } : {}),
     }
     const linuxScope = containmentMode === 'linux-scope' ? this.linuxScopeDecision : undefined
     let scope: ReturnType<typeof prepareLinuxTerminalScope> | undefined
@@ -319,7 +322,7 @@ export class LocalSubprocessRuntime extends SubprocessRuntime {
         ? undefined
         : prepareLinuxTerminalScope(launch, { ...activity?.env ?? env, PWD: spec.cwd, TERM: spec.terminalType }, linuxScope.literalArgv)
       if (scope !== undefined) { options.cwd = scope.cwd; options.env = scope.env }
-      terminal = requireNodePty().spawn(
+      terminal = (winpty ? requireWinpty() : requireNodePty()).spawn(
         scope?.command ?? file,
         scope?.args ?? [...launch.argv.slice(1)],
         options,

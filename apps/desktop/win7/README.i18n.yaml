@@ -1,0 +1,28 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write apps/desktop/win7/README.md
+/:
+  en: 12a44e60ef376336
+  zh: f6f088616281d445
+/windows-7-portable-desktop:
+  en: 23f99ad0545e38bb
+  zh: 2aaa9d86802ca987
+/windows-7-portable-desktop/summary:
+  en: 46e40a95d31171b4
+  zh: 44f4ef30abd37e0a
+/windows-7-portable-desktop/table-of-contents:
+  en: 388d7f7b50436ba2
+  zh: 82dde6500b53d9a9
+/windows-7-portable-desktop/build:
+  en: c73f482947867fad
+  zh: 0930c7d096fdd456
+/windows-7-portable-desktop/runtime-selection:
+  en: c98e840c0da7dc35
+  zh: 51f120f54f525d57
+/windows-7-portable-desktop/guest-validation:
+  en: 7d411291c15a19e7
+  zh: 0345d79902fcb9e9
+/windows-7-portable-desktop/limitations:
+  en: bbc7e7123f8a8873
+  zh: a88729853adbef3a

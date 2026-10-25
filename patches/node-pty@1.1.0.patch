@@ -1,0 +1,23 @@
+diff --git a/lib/windowsPtyAgent.js b/lib/windowsPtyAgent.js
+--- a/lib/windowsPtyAgent.js
++++ b/lib/windowsPtyAgent.js
+@@ -98,5 +98,11 @@
+         });
+         this._inSocket.setEncoding('utf8');
++        if (!this._useConpty) {
++            this._outSocket.once('close', function () {
++                _this._inSocket.destroy();
++                _this._conoutSocketWorker.dispose();
++            });
++        }
+         if (this._useConpty) {
+             var connect = this._ptyNative.connect(this._pty, commandLine, cwd, env, this._useConptyDll, function (c) { return _this._$onProcessExit(c); });
+             this._innerPid = connect.pid;
+@@ -151,6 +157,7 @@
+                 // Close the input write handle to signal the end of session.
+                 this._inSocket.destroy();
+                 this._ptyNative.kill(this._pty, this._useConptyDll);
++                this._conoutSocketWorker.dispose();
+                 this._outSocket.on('data', function () {
+                     _this._conoutSocketWorker.dispose();
+                 });

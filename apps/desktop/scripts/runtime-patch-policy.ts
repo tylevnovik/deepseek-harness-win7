@@ -18,6 +18,7 @@ export const DESKTOP_RUNTIME_PATCHES: Readonly<Record<string, DesktopRuntimePatc
   'exceljs@4.4.0': { scope: 'workspace-only', reason: 'The patched parser is embedded in the client bundle and worker.' },
   'lexical@0.49.0': { scope: 'workspace-only', reason: 'The patched editor is embedded in the client bundle.' },
   'node-pty@1.2.0-beta.15': { scope: 'shared', reason: 'Runtime terminals need helper resolution and Windows worker cleanup.' },
+  'node-pty@1.1.0': { scope: 'shared', reason: 'WinPTY supports Windows 7; its bundled ConPTY branch retains worker cleanup.' },
 }
 
 /** Reviewed Desktop dependency constraints, independent of patch selection. */

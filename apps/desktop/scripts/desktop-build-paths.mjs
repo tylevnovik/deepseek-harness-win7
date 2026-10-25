@@ -47,7 +47,11 @@ export function desktopTargetBuildPaths(target, environment = process.env) {
   if (!cacheRoot.trim() || !isAbsolute(cacheRoot) || cacheRoot.includes('\0')) {
     throw new Error('desktop package: DSH_DESKTOP_PACKAGE_CACHE_DIR must be a nonempty absolute directory')
   }
-  const root = join(BUILD_ROOT, 'targets', target)
+  if (environment.DSH_DESKTOP_WIN7 !== undefined && !['0', '1'].includes(environment.DSH_DESKTOP_WIN7)) {
+    throw new Error('DSH_DESKTOP_WIN7 must be 0 or 1')
+  }
+  if (environment.DSH_DESKTOP_WIN7 === '1' && target !== 'win-x64') throw new Error('Windows 7 requires the win-x64 target')
+  const root = join(BUILD_ROOT, 'targets', environment.DSH_DESKTOP_WIN7 === '1' ? 'win7-x64' : target)
   const packed = join(root, 'packed')
   return {
     root,

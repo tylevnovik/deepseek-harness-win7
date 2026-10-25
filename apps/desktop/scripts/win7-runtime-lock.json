@@ -1,0 +1,72 @@
+{
+  "electron": {
+    "version": "44.2.0",
+    "node": "24.20.0",
+    "url": "https://github.com/e3kskoy7wqk/Electron-for-windows-7/releases/download/v44.2.0/dist.zip",
+    "sha256": "c50ba2c10c87331ab961f60569e4d906c8514921ac17e138fd0da21ee4ddb2b1"
+  },
+  "ucrt": {
+    "sdk": "10.0.22000.0",
+    "sha256": "398e0fa38fb5945b8b0b7990c705a32e54d141d0b07e81f711ac4d44d5885602"
+  },
+  "builtin": {
+    "revision": "a58d3599a2e551d7d706d1ff796c9fd4bbaff63c",
+    "url": "https://codeload.github.com/deepseek-ai/dsh-node-addon-require-builtin/tar.gz/a58d3599a2e551d7d706d1ff796c9fd4bbaff63c",
+    "sha256": "286616f15e4f12013988e45ad27a69b4968a9f059c8bd351e412505230577948"
+  },
+  "python": {
+    "version": "3.14.5",
+    "revision": "b9e764afe393cc68c26ee065dcebcc25dde21bc9",
+    "url": "https://raw.githubusercontent.com/Alex313031/Python-Win7/b9e764afe393cc68c26ee065dcebcc25dde21bc9/3.14.5/python.3.14.5.nupkg",
+    "sha256": "ead175dd19ded5ce31f2f11c48ea8c55f508249235938e0ea202a4573a507b19",
+    "wheels": [
+      {
+        "url": "https://files.pythonhosted.org/packages/a3/2e/235b4d96619931192c91660805e5e49242389742a7a82c27665021db690c/numpy-2.3.5-cp314-cp314-win_amd64.whl",
+        "sha256": "e6a0bc88393d65807d751a614207b7129a310ca4fe76a74e5c7da5fa5671417e"
+      },
+      {
+        "url": "https://files.pythonhosted.org/packages/09/f8/8ce132104074f977f907442790eaae24e27bce3b3b454e82faa3237ff098/pandas-3.0.1-cp314-cp314-win_amd64.whl",
+        "sha256": "93325b0fe372d192965f4cca88d97667f49557398bbf94abdda3bf1b591dbe66"
+      },
+      {
+        "url": "https://files.pythonhosted.org/packages/f1/e0/492879f69d94f91f60fc8cd05ba03650e9520afebb2fb7aa12777d7c7f38/pillow-12.3.0-cp314-cp314-win_amd64.whl",
+        "sha256": "fdafc9cce40277e0f7a0feabce0ee50dd2fa1800f3b38015e51296b5e814048d"
+      },
+      {
+        "url": "https://files.pythonhosted.org/packages/0f/bc/5811cc73cac05e324e05ba9b0924e1a163a317a167ede8a9c748b11db30a/lxml-6.1.3-cp314-cp314-win_amd64.whl",
+        "sha256": "66299564c046bc7e0cc5de5106601eae907e9fa5904cd68a323380a8502f7861"
+      }
+    ]
+  },
+  "wasmPackages": [
+    {
+      "name": "@img/sharp-wasm32",
+      "version": "0.35.5",
+      "url": "https://registry.npmjs.org/@img/sharp-wasm32/-/sharp-wasm32-0.35.5.tgz",
+      "integrity": "sha512-Ptsga1su4tQx+LLF1ECS9U6nz5kmrXKo6XVbtR48Ke3ZRxxgaWBu7IDtEe1quo8hiupwm6WFqxVlXaSf7IINGQ=="
+    },
+    {
+      "name": "@emnapi/runtime",
+      "version": "1.11.3",
+      "url": "https://registry.npmjs.org/@emnapi/runtime/-/runtime-1.11.3.tgz",
+      "integrity": "sha512-Xz4Tpyki7XyrpbUK1jR1AhdAdaXyhhY4lZ3neLodmhpuWfy2PAQN5B46sAiU4liOXGLkHypn/qU+jvfWSCYYLA=="
+    },
+    {
+      "name": "tslib",
+      "version": "2.8.1",
+      "url": "https://registry.npmjs.org/tslib/-/tslib-2.8.1.tgz",
+      "integrity": "sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w=="
+    },
+    {
+      "name": "@deepseek-ai/libreoffice-kit-wasm",
+      "version": "0.1.5",
+      "url": "https://registry.npmjs.org/@deepseek-ai/libreoffice-kit-wasm/-/libreoffice-kit-wasm-0.1.5.tgz",
+      "integrity": "sha512-V+pu5xJsKhVD4AU1xbFlMWY91svK9ZIC2JsNOph9kWp/arF/KQcuytt76bcbozJqPbE8o0n04lyh0m3QW5RYSA=="
+    }
+  ],
+  "ripgrep": {
+    "version": "14.1.0",
+    "url": "https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-x86_64-pc-windows-msvc.zip",
+    "sha256": "fe4f75edfaa50f0d4fecbf47696b7629f3449c9c2c5a4da828753139e5a2e203"
+  }
+}

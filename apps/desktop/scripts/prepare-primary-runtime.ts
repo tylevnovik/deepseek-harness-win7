@@ -6,6 +6,7 @@ import { preparePrimaryRuntime as preparePayload, smokePrimaryRuntime as smokePa
 import { parsePrimaryRuntime, workspaceDependencyPaths } from '../../../packages/skill/tool-workspace-dependencies/src/index.ts'
 import { resolveDesktopBuildTarget, resolveDesktopTargetBuildPaths } from './desktop-build-paths.mjs'
 import { scrubWindowsSigningEnvironment } from './windows-sign.mjs'
+import { isWin7Build, prepareWin7PrimaryRuntime } from './prepare-win7-runtime.ts'
 
 /**
  * Prepare Desktop resources for its selected packaging target.
@@ -16,6 +17,7 @@ export async function preparePrimaryRuntime(options: { deferSmoke?: boolean } = 
   const paths = resolveDesktopTargetBuildPaths()
   const { version } = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as { version: string }
   await preparePayload({ target: resolveDesktopBuildTarget(), output: paths.runtime, cache: paths.downloads, version })
+  if (isWin7Build()) await prepareWin7PrimaryRuntime(join(paths.runtime, 'primary-runtime'), paths.electron, paths.downloads)
   if (!options.deferSmoke) smokePrimaryRuntime(join(paths.runtime, 'primary-runtime'))
 }
 
